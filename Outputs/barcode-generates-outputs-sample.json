@@ -1,0 +1,25 @@
+{
+  "connection_key": "request",
+  "result": true,
+  "redis_key": "abcdefg",
+  "filepath": "/var/lib/aion/Data/rededge_sdc/abcdef.json",
+  "api_status_code": 200,
+  "runtime_session_id": "786c60bfab5c480abcb2bd53a738e9ca",
+  "business_partner": 101,
+  "service_label": "BARCODE",
+  "api_type": "generates",
+  "message": {
+    "Product": {
+      "Product": "A3750",
+      "ProductStandardID": "1234567890128",
+      "BarcodeType": "EAN"
+    }
+  },
+  "api_schema": "Barcode",
+  "accepter": [
+    "All"
+  ],
+  "deleted": false,
+  "api_processing_result": true,
+  "api_processing_error": ""
+}

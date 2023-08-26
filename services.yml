@@ -1,0 +1,100 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    run: data-platform-api-barcode-generates
+  name: data-platform-api-barcode-generates
+spec:
+  selector:
+    matchLabels:
+      run: data-platform-api-barcode-generates
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        run: data-platform-api-barcode-generates
+    spec:
+      nodeName: worker
+      hostname: data-platform-api-barcode-generates
+      containers:
+        - name: data-platform-api-barcode-generates
+          image: latonaio/data-platform-api-barcode-generates
+          imagePullPolicy: Always
+          env:
+            - name: TZ
+              value: Asia/Tokyo
+            - name: RMQ_QUEUE_FROM
+              value: "data-platform-api-barcode-generates-queue"
+            - name: RMQ_QUEUE_TO_SQL
+              value: "sql-update-kube"
+            - name: RMQ_SESSION_CONTROL_QUEUE
+              value: "data-platform-api-barcode-generates-session-control-queue"
+            - name: IMAGE_WIDTH
+              value: "500"
+            - name: IMAGE_HEIGHT
+              value: "300"
+            - name: MOUNT_PATH
+              value: "/volume"
+          envFrom:
+            - configMapRef:
+                name: env-config
+            - secretRef:
+                name: env-secret
+          volumeMounts:
+            - name: barcode-storage
+              mountPath: /volume
+      volumes:
+        - name: barcode-persistent-storage
+          persistentVolumeClaim:
+            claimName: data-platform-api-barcode-generates-pv-claim
+        - name: barcode-storage
+          hostPath:
+            path: /mnt/data-platform-api-barcode-generates
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    run: data-platform-api-barcode-generates
+  name: data-platform-api-barcode-generates
+spec:
+  selector:
+    run: data-platform-api-barcode-generates
+  type: NodePort
+  ports:
+    - name: data-platform-api-barcode-generates
+      port: 3000
+      protocol: TCP
+      nodePort: 30900
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: data-platform-api-barcode-generates-pv-claim
+  namespace: default
+spec:
+  storageClassName: data-platform-api-barcode-generates
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: data-platform-api-barcode-generates-pv-volume
+  labels:
+    type: local
+  namespace: default
+spec:
+  storageClassName: data-platform-api-barcode-generates
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /mnt/data-platform-api-barcode-generates
+---
